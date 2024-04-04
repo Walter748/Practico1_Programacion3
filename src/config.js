@@ -6,5 +6,5 @@ export default {
     host: process.env.HOST || "",
     database: process.env.DATABASE || "",
     user: process.env.USER || "",
-    password: process.env.PASSWORS || "22130325Wal"
+    password: process.env.PASSWORS || ""
 };

@@ -1,7 +1,7 @@
 import express from "express";
 import morgan from "morgan";
 //routes
-import languageRoutes from "./routes/language.routes";
+import pacienteRoutes from "./routes/paciente.routes";
 
 const app = express();
 
@@ -13,6 +13,6 @@ app.use(morgan("dev"));
 app.use(express.json());
 
 //rutas
-app.use("/api/Language", languageRoutes);
+app.use("/paciente", pacienteRoutes);
 
 export default app;
