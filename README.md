@@ -2,10 +2,12 @@
 
 2) Crear archivo .env con lo siguiente:
 
+    ```
     HOST: localhost
     DATABASE: paciente
     USER: root
-    PASSWORD: 
+    PASSWORD:
+    ``` 
 
 3) Descargar las dependencias con lo siguiente:
     ```
