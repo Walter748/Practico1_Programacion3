@@ -1,5 +1,7 @@
 import express from "express";
 import morgan from "morgan";
+
+
 //routes
 import pacienteRoutes from "./routes/paciente.routes";
 
