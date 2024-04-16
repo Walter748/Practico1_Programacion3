@@ -11,7 +11,7 @@
 
 3) Descargar las dependencias con lo siguiente:
     ```
-    npm i dotenv express promise-mysql
+    npm i dotenv express promise-mysql path
     ```
 
     ```

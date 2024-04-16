@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lista de Pacientes</title>
+<style>
+    body {
+        background-color: #e0f2ff; /* Fondo celeste claro */
+        font-family: 'Homer Simpson UI'; /* Cambio de tipo de letra */
+    }
+
+    h2 {
+        color: #333;
+        font-size: 28px; /* Tamaño de fuente aumentado */
+        font-weight: bold; /* Letras en negrito */
+        text-align: center; /* Centrar el título */
+        margin-bottom: 20px; /* Espacio inferior */
+        font-family: "Homer Simpson UI";
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+    }
+
+    th, td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+        font-weight: bold; /* Letras en negrito */
+    }
+
+    th {
+        background-color: #f2f2f2;
+    }
+
+    .action-buttons {
+        margin-top: 20px;
+        display: flex; /* Mostrar los botones en línea */
+        justify-content: space-between; /* Espacio entre los botones */
+    }
+
+    .action-buttons button {
+        padding: 8px 16px;
+        border: none;
+        cursor: pointer;
+        border-radius: 4px;
+        font-weight: bold; /* Letras en negrito */
+    }
+
+    .add-button {
+        background-color: #00ff00; /* Verde claro */
+        color: #333;
+        margin-right: 5px; /* Espacio entre botones */
+    }
+
+    .search-button {
+        background-color: #ffd700; /* Amarillo */
+        color: #333;
+        margin-left: 5px; /* Espacio entre botones */
+    }
+
+    .delete-button {
+        background-color: #fa4626; /* Rojo */
+        color: #333;
+    }
+
+    .update-button {
+        background-color: rgb(255, 134, 35); /* Naranja */
+        color: #333;
+    }
+
+    /* Estilo para el cuadro principal */
+    #patientsTableContainer {
+        background-color: #fff; /* Fondo blanco */
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Sombra suave */
+        margin-top: 20px;
+    }
+</style>
+</head>
+<body>
+
+<h2>Lista de Pacientes</h2>
+
+<div class="action-buttons">
+    <button class="add-button" onclick="openAddPatientForm()">Agregar Paciente</button>
+    <button class="search-button" onclick="openSearchPatientForm()">Buscar Paciente</button>
+</div>
+
+<!-- Contenedor del cuadro principal -->
+<div id="patientsTableContainer">
+  <table id="patientsTable">
+    <tr>
+      <th>Número</th>
+      <th>Nombre</th>
+     <th>Apellido</th>
+      <th>Dirección</th>
+      <th>Tipo</th>
+      <th>Acción</th>
+    </tr>
+  </table>
+</div>
+
+<script>
+  // Funciones JavaScript aquí...
+
+  // Función para abrir el formulario de agregar paciente
+  function openAddPatientForm() {
+    const form = prompt('Ingrese los detalles del paciente (Número, Nombre, Apellido, Dirección, Tipo):');
+    if (form) {
+      const [numero, nombre, apellido, direccion, tipo] = form.split(',').map(item => item.trim());
+      fetch('/paciente', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ numero, nombre, apellido, direccion, tipo })
+      })
+      .then(response => {
+        if (response.ok) {
+          // Recargar la página para actualizar la tabla
+          location.reload();
+        } else {
+          console.error('Error al agregar el paciente');
+        }
+      })
+      .catch(error => console.error('Error al agregar el paciente:', error));
+    }
+  }
+
+  // Función para abrir el formulario de buscar paciente
+  function openSearchPatientForm() {
+    const numero = prompt('Ingrese el número de paciente a buscar:');
+    if (numero) {
+      fetch(`/paciente/${numero}`)
+      .then(response => response.json())
+      .then(data => {
+        if (data.length > 0) {
+          alert(`Paciente encontrado:\nNúmero: ${data[0].numero}\nNombre: ${data[0].nombre}\nApellido: ${data[0].apellido}\nDirección: ${data[0].direccion}\nTipo: ${data[0].tipo}`);
+        } else {
+          alert('Paciente no encontrado');
+        }
+      })
+      .catch(error => console.error('Error al buscar el paciente:', error));
+    }
+  }
+
+  // Hacer una solicitud GET al servidor para obtener los datos de los pacientes
+  fetch('/paciente') // Cambia "/paciente" según la ruta de tus pacientes
+    .then(response => response.json())
+    .then(data => {
+      const table = document.getElementById('patientsTable');
+
+      data.forEach(patient => {
+        const row = table.insertRow();
+        row.insertCell().textContent = patient.numero;
+        row.insertCell().textContent = patient.nombre;
+        row.insertCell().textContent = patient.apellido;
+        row.insertCell().textContent = patient.direccion;
+        row.insertCell().textContent = patient.tipo;
+
+        // Agregar botones de acción para cada paciente
+        const actionCell = row.insertCell();
+        const deleteButton = document.createElement('button');
+        deleteButton.textContent = 'Eliminar';
+        deleteButton.addEventListener('click', () => deletePatient(patient.numero));
+        deleteButton.classList.add('delete-button'); // Agregar clase para estilo de botón eliminar
+        actionCell.appendChild(deleteButton);
+
+        const updateButton = document.createElement('button');
+        updateButton.textContent = 'Actualizar';
+        updateButton.addEventListener('click', () => updatePatient(patient.numero));
+        updateButton.classList.add('update-button'); // Agregar clase para estilo de botón actualizar
+        actionCell.appendChild(updateButton);
+      });
+    })
+    .catch(error => console.error('Error al obtener los datos de los pacientes:', error));
+
+  // Función para eliminar un paciente
+  function deletePatient(patientNumber) {
+    fetch(`/paciente/${patientNumber}`, { method: 'DELETE' })
+      .then(response => {
+        if (response.ok) {
+          // Recargar la página para actualizar la tabla
+          location.reload();
+        } else {
+          console.error('Error al eliminar el paciente');
+        }
+      })
+      .catch(error => console.error('Error al eliminar el paciente:', error));
+  }
+
+  // Función para actualizar un paciente
+  function updatePatient(patientNumber) {
+    const form = prompt('Ingrese los detalles actualizados del paciente (Nombre, Apellido, Dirección, Tipo):');
+    if (form) {
+      const [nombre, apellido, direccion, tipo] = form.split(',').map(item => item.trim());
+      fetch(`/paciente/${patientNumber}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ nombre, apellido, direccion, tipo })
+      })
+      .then(response => {
+        if (response.ok) {
+          // Recargar la página para actualizar la tabla
+          location.reload();
+        } else {
+          console.error('Error al actualizar el paciente');
+        }
+      })
+      .catch(error => console.error('Error al actualizar el paciente:', error));
+    }
+  }
+</script>
+
+</body>
+</html>
